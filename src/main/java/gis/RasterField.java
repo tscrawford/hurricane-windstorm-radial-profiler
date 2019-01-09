@@ -1,4 +1,4 @@
-package GIS;
+package gis;
 
 public class RasterField {
 

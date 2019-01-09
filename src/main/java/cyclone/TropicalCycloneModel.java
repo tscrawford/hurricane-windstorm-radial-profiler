@@ -1,8 +1,18 @@
 package cyclone;
 
-import org.jblas.DoubleMatrix;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jblas.FloatMatrix;
+import org.opengis.coverage.grid.GridEnvelope;
+import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.RasterFactory;
+import java.awt.*;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -13,11 +23,14 @@ public abstract class TropicalCycloneModel {
     protected float cellSize;
     protected String outFilePath;
 
-    protected float[] lats;
-    protected float[] lons;
+    protected FloatMatrix latitudes;
+    protected FloatMatrix longitudes;
+    protected int latSize;
+    protected int lonSize;
 
-    protected DoubleMatrix range;
-
+    private CoordinateReferenceSystem crs;
+    private final int GRID_WIDTH = 1;
+    private final int GRID_HEIGHT = 1;
 
     TropicalCycloneModel(float cellSize, String outputFile, ArrayList<Float> bounds){
 
@@ -33,6 +46,10 @@ public abstract class TropicalCycloneModel {
         this.cellSize = cellSize;
         this.outFilePath = outputFile;
 
+        generateCoordinates();
+
+        System.out.print("");
+
 
     }
 
@@ -45,11 +62,48 @@ public abstract class TropicalCycloneModel {
 
         float cs = this.cellSize;
 
-        int dx = getNumberOfCells(ulx, llx, cellSize);
-        int dy = getNumberOfCells(uly, lly, cellSize);
+        lonSize = getNumberOfCells(cellSize, ulx, llx);
+        latSize = getNumberOfCells(cellSize, uly, lly);
+
+        this.latitudes = new FloatMatrix(lonSize,latSize);
+        this.longitudes = new FloatMatrix(lonSize,latSize);
+
+        // resample land mask bbox region to given cell size
+        GridGeometry2D ggeo = generateBoundingBoxRegion(ulx, llx, uly, lly);
+        extractGridValues(lonSize, latSize, ggeo);
+
+    }
+
+    public void extractGridValues(int dx, int dy, GridGeometry2D ggeo){
+
+        // extracting lat lon values for land mask grid points
+        for (int i = 0; i < dx; i++) {
+            for (int j = 0; j < dy; j++) {
+
+                try {
+                    Envelope2D Genv = ggeo.gridToWorld(new GridEnvelope2D(i, j, GRID_WIDTH, GRID_HEIGHT));
+
+                    this.latitudes.put(i+j*dx, (float) Genv.getCenterY() );
+                    this.longitudes.put(i+j*dx, (float) Genv.getCenterX() );
+
+                } catch (TransformException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public GridGeometry2D generateBoundingBoxRegion(float ulx, float llx, float uly, float lly){
 
 
+        // defined new bounding box - an envelope defined by maximum and minimum values.
+        BoundingBox newBoundBox = new ReferencedEnvelope(ulx, llx, uly, lly, this.crs);
+        GeneralEnvelope cropEnvelope = new GeneralEnvelope(newBoundBox);
 
+        Rectangle rectangle = new Rectangle(lonSize, latSize);
+        GridEnvelope genv = new GridEnvelope2D(rectangle);
+
+        return new GridGeometry2D(genv, cropEnvelope);
 
     }
 
@@ -86,13 +140,13 @@ public abstract class TropicalCycloneModel {
             }
         }
 
-
     }
 
+    public abstract void writeRaster();
 
-    protected void writeRaster(){
+    public abstract void runModel();
 
-    }
+
 
 
 }
