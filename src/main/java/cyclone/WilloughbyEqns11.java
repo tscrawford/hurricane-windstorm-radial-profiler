@@ -19,8 +19,9 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
     @Override
     public void runModel() {
 
-        float ye = -55.0f;
-        float xe = -40.0f;
+        float ye = 25.6f;
+        float xe = -85.3f;
+
         float cs = 18.0f;
         float Mx = 125.3f;
         float Rx = 22.3f;
@@ -29,20 +30,19 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
         float course = 283.0f; // true bearing
 
         //next
-        float nxe = -39.5f;
-        float nye = 55.8f;
+        float nxe = -84.5f;
+        float nye = 26.7f;
 
         // position delta values
-//        float dy = nye - ye;
         float dx = nxe - xe;
 
-        // atan2 handles zero conditions
-        float chi = (float) Math.atan2(Math.sin(dx * (PI / 180f)) * Math.cos(nye * (PI / 180f)),
-                Math.cos(ye * (PI / 180f)) * Math.sin(nye * (PI / 180.0f)) -
-                        Math.sin(ye * (PI / 180f)) * Math.cos(nye * (PI / 180f)) *
-                                Math.cos(dx * (PI / 180f)));
+        // atan2 handles zero conditions where hurricane doesn't move
+        float chi = (float) Math.atan2(Math.sin(dx * PI180) * Math.cos(nye * PI180),
+                        Math.cos(ye * PI180) * Math.sin(nye * PI180) - Math.sin(ye * PI180) *
+                        Math.cos(nye * PI180) * Math.cos(dx * PI180));
+
         chi = chi % (2.0f * PI);
-        chi = chi * (180.0f / PI);
+        chi = chi * (180f/PI);
 
         // chi represents hurricane direction relative to longitudinal direction
         if (chi < -90.0f)
@@ -53,6 +53,9 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
             chi = chi * (-1f) + 90f;
         else
             chi = 90f - chi;
+
+
+        System.out.println("chi: "+chi);
 
 
         // removing the translation speed component:
@@ -106,14 +109,6 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
 
         }
 
-
-        // ensure 0<=w<=1
-//        if (xi <= 0.0f)
-//            w = 0.0f;
-//        else if (xi >= 1.0f)
-//            w = 1.0f;
-
-
         // "...width of the transition is specified a priori, between 10 and 25 km."
         // pg.1104, paragraph 2
         //
@@ -128,38 +123,47 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
         }
 
         FloatMatrix grid = new FloatMatrix(longitudes.columns, latitudes.rows);
-        float theta=0.0f;
 
         for (int i = 0; i < lonSize; i++)
             for (int j = 0; j < latSize; j++) {
 
+                float lat = latitudes.get(i*latSize +  j);
+                float lon = longitudes.get(i*latSize + j);
+
                 // The angle, from the eye to a grid point(lon,lat), measure relative to longitudinal direction
                //   K.A. Werley and A.W. McCown. Estimating cyclone wind decay over land. Technical report,
                //   Los Alamos National Laboratory (LANL), Los Alamos, NM (United States), 2007.
-                float phi = (float) (180f / PI * Math.atan((latitudes.get(i + lonSize * j) - ye) /
-                        (longitudes.get(i + lonSize * j) - xe) /
-                        Math.cos(PI * ((latitudes.get(i + lonSize * j) + ye) / 2.0f) / 180f)));
+                float phi = (float) (180.0f / PI * Math.atan((lat - ye) / (lon - xe) / Math.cos(PI * ((lat + ye) / 2.0f) / 180.0f)));
 
 
-                if ((longitudes.get(i + lonSize * j) - xe) < 0.0)
+                if ((lon - xe) < 0.0f)
                     phi = phi + 180f;
 
 
+
                 // lat/lon bearing from storm eye
-                theta = phi - chi + 90.0f;
-                float range = (float) (Math.pow(Math.sin((latitudes.get(i + lonSize * j) - ye) * (PI / 180.0) / 2.0), 2.0) +
-                        Math.cos(latitudes.get(i + lonSize * j) * (PI / 180.0)) * Math.cos(ye * (PI / 180.0)) *
-                                Math.pow(Math.sin((longitudes.get(i + lonSize * j) - xe) * (PI / 180.0) / 2.0), 2.0));
+                float theta = phi - chi + 90.0f;
+
+
+                float range = (float) (Math.pow(Math.sin((lat - ye) * PI180 / 2.0), 2.0) +
+                        Math.cos(lat * PI180) * Math.cos(ye * PI180) *
+                                Math.pow(Math.sin((lon - xe) * PI180 / 2.0), 2.0));
 
                 range = (float) Math.sqrt(range);
                 range = (float) (2f * EARTH_RADIUS * Math.asin(range));
-                System.out.println(range);
 
                 float V0 = (float) (Vmax * ((1.0f - A) * Math.exp(-(range - Rmax) / X1) +
                         A * Math.exp(-(range - Rmax) / X2)));
 
                 xi = (range - R1) / (R2 - R1);
                 w = wf(xi, 0.0f);
+
+                //ensure 0 <= w <= 1
+                if (xi <= 0.0f)
+                    w = 0.0f;
+                else if (xi >= 1.0f)
+                    w = 1.0f;
+
                 float velocity;
 
                 if (range <= R1)
@@ -192,38 +196,37 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
                 // each component <u,v> => <v*cos(), v*sin()>
                 // mod function used to ensure degree adjustment is 0<=deg<=360
 
-                float wind_u = (float) (velocity * Math.cos((theta + beta_angle) % 360f) * (PI / 180f));
-                float wind_v = (float) (velocity * Math.sin((theta + beta_angle) % 360f) * (PI / 180f));
+                float wind_u = (float) (velocity * Math.cos(( (theta + beta_angle) % 360.0f) * PI180));
+                float wind_v = (float) (velocity * Math.sin(( (theta + beta_angle) % 360.0f) * PI180));
 
                 // correction factor
                 float cf = (2.0f * Rmax * range) / (Rmax * Rmax + range * range);
+
 
                 // add in correction factor by component
                 wind_u = cf * wind_u;
                 wind_v = cf * wind_v;
 
                 // asymmetric factor
-                float asymf = (float) (cf * cs * Math.cos(theta * (PI / 180f)));
+                float asymf = (float) (cf * cs* Math.cos(theta * PI180));
+
 
                 // total wind speed value
                 velocity = (float) (Math.sqrt(wind_u * wind_u + wind_v * wind_v) + asymf);
 
+                if(velocity < 0.0) velocity = 0.0f;
 
-                grid.put(i + lonSize * j, velocity);
+                grid.put(i + lonSize * j, velocity*MPS_TO_KNOTS);
 
             }
 
-        System.out.println(grid);
-        System.out.println("  chi: "+chi);
-        System.out.println("theta: "+theta);
-        System.out.println("theta: "+theta);
+        System.out.println("writing raster ...");
+        writeAsciiGrid(grid);
+        System.out.println("Complete! ...");
 
     }
 
-    @Override
-    public void writeRaster() {
-        System.out.println(" --- " + this.latitudes.columns);
-    }
+
 
 
 

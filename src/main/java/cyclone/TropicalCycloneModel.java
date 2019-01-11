@@ -15,6 +15,8 @@ import javax.media.jai.RasterFactory;
 import java.awt.*;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public abstract class TropicalCycloneModel {
@@ -142,7 +144,34 @@ public abstract class TropicalCycloneModel {
 
     }
 
-    public abstract void writeRaster();
+    protected void writeAsciiGrid(FloatMatrix m){
+
+        try {
+            FileWriter writer = new FileWriter("output.asc", false);
+
+            writer.write("ncols\t"+lonSize+"\r\n");
+            writer.write("nrows\t"+latSize+"\r\n");
+            writer.write("xllcorner\t"+bbox.get(0)+"\r\n");
+            writer.write("yllcorner\t"+bbox.get(1)+"\r\n");
+            writer.write("cellsize\t"+cellSize+"\r\n");
+            writer.write("NODATA_value\t -9999 \r\n");
+
+
+
+            for(int i=0; i<lonSize; i++){
+                for(int j=0; j<latSize; j++){
+                    writer.write(String.valueOf(m.get(i+j*lonSize))+" ");
+                }
+                writer.write("\r\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
 
     public abstract void runModel();
 

@@ -4,6 +4,8 @@ import org.jblas.FloatMatrix;
 
 import java.util.ArrayList;
 
+import static cyclone.Parameters.PI180;
+
 public class TCWDMain {
 
     public static void main(String[] args) {
@@ -17,10 +19,8 @@ public class TCWDMain {
         bounds.add(-25.2f);
         bounds.add(65.1f);
 
-        TropicalCycloneModel tc = new WilloughbyEqns11(0.5f, "out.asc", bounds);
-
+        TropicalCycloneModel tc = new WilloughbyEqns11(0.05f, "out.asc", bounds);
         tc.runModel();
-        tc.writeRaster();
 
 
     }

@@ -10,6 +10,7 @@ public final class Parameters {
     public static final float PI = 3.1415927f;          // mathematical constant for Pi
     public static final float NM_TO_KM = 1.852f;        // convert nautical miles to kilometers
     public static final float EARTH_RADIUS = 6371.1f;   // earth radius in kilometers
+    public static final float PI180 = PI/180f;
 
 
 }
