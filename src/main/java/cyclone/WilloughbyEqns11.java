@@ -1,37 +1,31 @@
 package cyclone;
 
 import org.jblas.FloatMatrix;
-
-import java.util.ArrayList;
-
 import static cyclone.Parameters.*;
-
 
 public class WilloughbyEqns11 extends TropicalCycloneModel {
 
+    private ModelInput m;
 
-
-    public WilloughbyEqns11(float cellSize, String FileOuputPath, ArrayList<Float> bounds) {
-        super(cellSize, FileOuputPath, bounds);
-
+    public WilloughbyEqns11(float cellSize, String FileOuputPath, ModelInput m) {
+        super(cellSize, FileOuputPath, m.getBounds());
+        this.m = m;
     }
 
     @Override
     public void runModel() {
 
-        float ye = 25.6f;
-        float xe = -85.3f;
+        float ye = m.getLatitude();//25.6f;
+        float xe = m.getLongitude();//-85.3f;
 
-        float cs = 18.0f;
-        float Mx = 125.3f;
-        float Rx = 22.3f;
+        float cs = m.getSpeed();//18.0f;
+        float Mx = m.getMaxWindSpeed();//125.3f;
+        float Rx = m.getMaxWindRadius();//17.3f;
 
-        // TODO: next known position could be another lat/lon - true bearing?
-        float course = 283.0f; // true bearing
 
         //next
-        float nxe = -84.5f;
-        float nye = 26.7f;
+        float nxe = m.getNextLongitude();//-85.3f;
+        float nye = m.getNextLatitude();//26.9f;
 
         // position delta values
         float dx = nxe - xe;
@@ -54,9 +48,7 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
         else
             chi = 90f - chi;
 
-
         System.out.println("chi: "+chi);
-
 
         // removing the translation speed component:
         //   Phadke AC, Martino CD, Cheung KF, and Houston SH. 2003. Modeling of
@@ -65,7 +57,7 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
         //
         // this is not an agreed on value within the hurricane research community
         cs = KNOTS_TO_MPS * cs;
-        float Vmax = KNOTS_TO_MPS * Mx - cs;
+        float Vmax = KNOTS_TO_MPS * Mx - cs*0.5f;
 
         // convert MWR to kilometers
         float Rmax = Rx * NM_TO_KM;
@@ -135,16 +127,13 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
                //   Los Alamos National Laboratory (LANL), Los Alamos, NM (United States), 2007.
                 float phi = (float) (180.0f / PI * Math.atan((lat - ye) / (lon - xe) / Math.cos(PI * ((lat + ye) / 2.0f) / 180.0f)));
 
-
                 if ((lon - xe) < 0.0f)
                     phi = phi + 180f;
-
-
 
                 // lat/lon bearing from storm eye
                 float theta = phi - chi + 90.0f;
 
-
+                // approximate distance using Haversine formula
                 float range = (float) (Math.pow(Math.sin((lat - ye) * PI180 / 2.0), 2.0) +
                         Math.cos(lat * PI180) * Math.cos(ye * PI180) *
                                 Math.pow(Math.sin((lon - xe) * PI180 / 2.0), 2.0));
@@ -152,13 +141,10 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
                 range = (float) Math.sqrt(range);
                 range = (float) (2f * EARTH_RADIUS * Math.asin(range));
 
-                float V0 = (float) (Vmax * ((1.0f - A) * Math.exp(-(range - Rmax) / X1) +
-                        A * Math.exp(-(range - Rmax) / X2)));
-
                 xi = (range - R1) / (R2 - R1);
                 w = wf(xi, 0.0f);
 
-                //ensure 0 <= w <= 1
+                //ensure 0 <= w <= 1 when inside hurricane eyewall
                 if (xi <= 0.0f)
                     w = 0.0f;
                 else if (xi >= 1.0f)
@@ -166,12 +152,16 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
 
                 float velocity;
 
+                float V0 = (float) (Vmax * ((1.0f - A) * Math.exp(-(range - Rmax) / X1) +
+                        A * Math.exp(-(range - Rmax) / X2)));
+
                 if (range <= R1)
                     velocity = (float) ( Vmax * Math.pow((range / Rmax), n));
                 else if (range > R1 && range < R2)
                     velocity = (float) ( Vmax * Math.pow((range / Rmax), n) * (1 - w) + V0 * w);
                 else
                     velocity = V0;
+
 
                 // TODO: add land mask features for wind reduction
                 // Wind inflow angle
@@ -202,21 +192,17 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
                 // correction factor
                 float cf = (2.0f * Rmax * range) / (Rmax * Rmax + range * range);
 
-
                 // add in correction factor by component
                 wind_u = cf * wind_u;
                 wind_v = cf * wind_v;
 
                 // asymmetric factor
-                float asymf = (float) (cf * cs* Math.cos(theta * PI180));
-
+                float asymf = (float) (cf * cs * Math.cos(theta * PI180) );
 
                 // total wind speed value
-                velocity = (float) (Math.sqrt(wind_u * wind_u + wind_v * wind_v) + asymf);
+                velocity = (float) (Math.sqrt(wind_u * wind_u + wind_v * wind_v)) + asymf;
 
-                if(velocity < 0.0) velocity = 0.0f;
-
-                grid.put(i + lonSize * j, velocity*MPS_TO_KNOTS);
+                grid.put(i + lonSize * j, velocity * MPS_TO_KNOTS);
 
             }
 

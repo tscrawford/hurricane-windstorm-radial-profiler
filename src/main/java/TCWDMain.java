@@ -1,32 +1,40 @@
+import cyclone.ModelInput;
 import cyclone.TropicalCycloneModel;
 import cyclone.WilloughbyEqns11;
 import org.jblas.FloatMatrix;
-
 import java.util.ArrayList;
 
-import static cyclone.Parameters.PI180;
 
 public class TCWDMain {
 
     public static void main(String[] args) {
 
-        scratch();
-
         ArrayList<Float> bounds = new ArrayList<>();
+
+        ModelInput m = new ModelInput();
 
         bounds.add(-120.5f);
         bounds.add(5.3f);
         bounds.add(-25.2f);
         bounds.add(65.1f);
 
-        TropicalCycloneModel tc = new WilloughbyEqns11(0.05f, "out.asc", bounds);
-        tc.runModel();
+        m.setBounds(bounds);
+        m.setLongitude(-85.3f);
+        m.setLatitude(25.6f);
+        m.setNextLongitude(-85.3f);
+        m.setNextLatitude(26.9f);
+        m.setSpeed(15.0f);
+        m.setMaxWindRadius(17.3f);
+        m.setMaxWindSpeed(125.3f);
 
+        TropicalCycloneModel tc = new WilloughbyEqns11(0.05f, "out.asc", m);
+        tc.runModel();
 
     }
 
 
     public static void scratch() {
+
 
         int[] idx = new int[2];
         int Rows = 3;

@@ -160,7 +160,7 @@ public abstract class TropicalCycloneModel {
 
             for(int i=0; i<lonSize; i++){
                 for(int j=0; j<latSize; j++){
-                    writer.write(String.valueOf(m.get(i+j*lonSize))+" ");
+                    writer.write(m.get(i+j*lonSize)+" ");
                 }
                 writer.write("\r\n");
             }
