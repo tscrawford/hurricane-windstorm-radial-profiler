@@ -16,6 +16,10 @@ wind decay model from Willoughby et. al (2006).
 <img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/spatial.PNG" width="400" height="200" />
 
 
+![Alt text](spatial.PNG?raw=true "Spatial")
+![Alt text](profile.PNG?raw=true "Profile")
+
+
 ### References
 
 Willoughby, H. E., Darling, R. W. R., & Rahn, M. E. (2006). Parametric representation of the 
