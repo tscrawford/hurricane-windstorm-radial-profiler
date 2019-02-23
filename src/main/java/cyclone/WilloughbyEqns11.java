@@ -15,17 +15,17 @@ public class WilloughbyEqns11 extends TropicalCycloneModel {
     @Override
     public void runModel() {
 
-        float ye = m.getLatitude();//25.6f;
-        float xe = m.getLongitude();//-85.3f;
+        float ye = m.getLatitude();
+        float xe = m.getLongitude();
 
-        float cs = m.getSpeed();//18.0f;
-        float Mx = m.getMaxWindSpeed();//125.3f;
-        float Rx = m.getMaxWindRadius();//17.3f;
+        float cs = m.getSpeed();
+        float Mx = m.getMaxWindSpeed();
+        float Rx = m.getMaxWindRadius();
 
 
         //next
-        float nxe = m.getNextLongitude();//-85.3f;
-        float nye = m.getNextLatitude();//26.9f;
+        float nxe = m.getNextLongitude();
+        float nye = m.getNextLatitude();
 
         // position delta values
         float dx = nxe - xe;

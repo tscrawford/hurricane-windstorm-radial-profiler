@@ -123,7 +123,7 @@ public abstract class TropicalCycloneModel {
     }
 
     /**
-     * NOT USED - scratch function...
+     * NOT USED - testingMatrix function...
      * @param rows
      * @param cols
      * @param cellSize

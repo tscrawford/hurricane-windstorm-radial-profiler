@@ -21,8 +21,8 @@ public class TCWDMain {
         m.setBounds(bounds);
         m.setLongitude(-85.3f);
         m.setLatitude(25.6f);
-        m.setNextLongitude(-85.3f);
-        m.setNextLatitude(26.9f);
+        m.setNextLongitude(-86.2f);
+        m.setNextLatitude(26.2f);
         m.setSpeed(15.0f);
         m.setMaxWindRadius(17.3f);
         m.setMaxWindSpeed(125.3f);
@@ -33,7 +33,7 @@ public class TCWDMain {
     }
 
 
-    public static void scratch() {
+    public static void testingMatrix() {
 
 
         int[] idx = new int[2];
