@@ -12,8 +12,8 @@ wind decay model from Willoughby et. al (2006).
 
 ## Example Plot 
 
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/blob/master/profile.PNG" width="400" height="200" />
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/blob/master/spatial.PNG" width="400" height="200" />
+<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/profile.PNG" width="400" height="200" />
+<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/spatial.PNG" width="400" height="200" />
 
 
 ### References
