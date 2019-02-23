@@ -10,13 +10,10 @@ estimate for risk assessment.
 This model produces a spatial representation of cyclone wind speeds by sweeping out a hurricane 
 wind decay model from Willoughby et. al (2006).
 
-## Example Plot 
-
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/profile.png" width="400" height="200" />
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/spatial.png" width="400" height="200" />
-
-
+## Spatial
 ![Alt text](spatial.png?raw=true "Spatial")
+
+## Hurricane Wind Profile
 ![Alt text](profile.png?raw=true "Profile")
 
 
