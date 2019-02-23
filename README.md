@@ -12,12 +12,12 @@ wind decay model from Willoughby et. al (2006).
 
 ## Example Plot 
 
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/profile.PNG" width="400" height="200" />
-<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/spatial.PNG" width="400" height="200" />
+<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/profile.png" width="400" height="200" />
+<img src="https://github.com/tscrawford/hurricane-windstorm-radial-profiler/spatial.png" width="400" height="200" />
 
 
-![Alt text](spatial.PNG?raw=true "Spatial")
-![Alt text](profile.PNG?raw=true "Profile")
+![Alt text](spatial.png?raw=true "Spatial")
+![Alt text](profile.png?raw=true "Profile")
 
 
 ### References
